@@ -1,0 +1,260 @@
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.cookie.CookiePolicy;
+import org.apache.commons.lang.StringUtils;
+
+import com.qunar.qfwrapper.bean.booking.BookingInfo;
+import com.qunar.qfwrapper.bean.booking.BookingResult;
+import com.qunar.qfwrapper.bean.search.FlightDetail;
+import com.qunar.qfwrapper.bean.search.FlightSearchParam;
+import com.qunar.qfwrapper.bean.search.FlightSegement;
+import com.qunar.qfwrapper.bean.search.OneWayFlightInfo;
+import com.qunar.qfwrapper.bean.search.ProcessResultInfo;
+import com.qunar.qfwrapper.constants.Constants;
+import com.qunar.qfwrapper.interfaces.QunarCrawler;
+import com.qunar.qfwrapper.util.QFGetMethod;
+import com.qunar.qfwrapper.util.QFHttpClient;
+import com.qunar.qfwrapper.util.QFPostMethod;
+import com.travelco.rdf.infocenter.InfoCenter;
+
+
+public class Wrapper_gjsairnt001 implements QunarCrawler {
+	private enum FlightDirection{OUT_BOUND, RETURN};
+	
+	class ProcessException extends Exception {	
+		private ProcessResultInfo _processResultInfo;
+		ProcessException(ProcessResultInfo info) {
+			this._processResultInfo = info;
+		}
+		
+		ProcessResultInfo getProcessResultInfo() {
+			return this._processResultInfo;
+		}
+	}
+	
+	private static final NameValuePair DATA_SEARCH_DATE_ADVANCE = new NameValuePair("data[search][dateAdvance]", "2");
+	private static final NameValuePair SEARCH_INIT_DATES_0_MONTH = new NameValuePair("search[initDates][0][month]", "06");
+	private static final NameValuePair SEARCH_INIT_DATES_0_YEAR = new NameValuePair("search[initDates][0][year]", "2014");
+	private static final NameValuePair SEARCH_INIT_DATES_1_MONTH = new NameValuePair("search[initDates][1][month]", "06");
+	private static final NameValuePair SEARCH_INIT_DATES_1_YEAR = new NameValuePair("search[initDates][1][year]", "2014");
+	private static final NameValuePair DATA_SEARCH_TIPO_BUSQUEDA = new NameValuePair("data[search][tipoBusqueda]", "normal");	
+	private static final NameValuePair DATA_SEARCH_ONE_WAY = new NameValuePair("data[search][oneWay]", "0");
+	private static final NameValuePair DATA_SEARCH_ONLY_POINTS = new NameValuePair("data[search][onlyPoints]", "0");
+	private static final NameValuePair DATA_SEARCH_ONLY_DIRECT_FLIGHTS = new NameValuePair("data[search][onlyDirectFlights]", "0");
+	private static final NameValuePair DATA_SEARCH_RETURN_DATE_VISUAL = new NameValuePair("data[search][returnDateVisual]", "");
+	private static final NameValuePair DATA_SEARCH_CALENDAR = new NameValuePair("data[search][calendar]", "0");
+	private static final NameValuePair DATA_SEARCH_PASSENGERS_ADTDC = new NameValuePair("data[search][passengers][ADTDC]", "1");
+	private static final NameValuePair DATA_SEARCH_PASSENGERS_ADT = new NameValuePair("data[search][passengers][ADT]", "0");
+	private static final NameValuePair DATA_SEARCH_PASSENGERS_CHDDC = new NameValuePair("data[search][passengers][CHDDC]", "0");
+	private static final NameValuePair DATA_SEARCH_PASSENGERS_CHD = new NameValuePair("data[search][passengers][CHD]", "0");
+	private static final NameValuePair DATA_SEARCH_PASSENGERS_INFDC = new NameValuePair("data[search][passengers][INFDC]", "0");
+	private static final NameValuePair DATA_SEARCH_PASSENGERS_INF = new NameValuePair("data[search][passengers][INF]", "0");
+	private static final NameValuePair DATA_SEARCH_CONDITIONS = new NameValuePair("data[search][conditions]", "0");
+	private static final NameValuePair DATA_SEARCH_FLAG_LESS_29_FARE = new NameValuePair("data[search][flagLess29Fare]", "0");
+	private static final NameValuePair DATA_SEARCH_FLAG_HIGHER_60_FARE = new NameValuePair("data[search][flagHigher60Fare]", "0");
+	private static final NameValuePair DATA_SEARCH_FLAG_LARGE_FAMILY = new NameValuePair("data[search][flagLargeFamily]", "0");
+	private static final NameValuePair DATA_SEARCH_FLAG_UNIVERSITY_FARE = new NameValuePair("data[search][flagUniversityFare]", "0");
+	
+	@Override
+	public BookingResult getBookingInfo(FlightSearchParam arg0) {
+		String bookingUrlPre = "https://www.bintercanarias.com/booking/availabilityFlightsDo";
+		BookingResult bookingResult = new BookingResult();
+		
+		BookingInfo bookingInfo = new BookingInfo();
+		bookingInfo.setAction(bookingUrlPre);
+		bookingInfo.setMethod("post");
+		Map<String, String> map = new LinkedHashMap<String, String>();
+		
+		map.put("data[NoModel][selectedPoints]","0");
+		map.put("data[flights][0]","EJ,E,9|NT6651,DKR,TFN,12:50,16:20,0,20140709,;NT651,TFN,GMZ,09:30,10:00,1210,20140710,|99,99,99,0,0,0|0ec29abfcf961edfdfc954f868e9520e");
+		map.put("data[flights][1]","EJ,E,9|NT652,GMZ,TFN,17:50,18:20,0,20140819,;NT6650,TFN,DKR,10:45,12:10,1160,20140820,|99,99,99,0,0,0|44482a930bcbe15ed7c735b131512ab3");
+		map.put("data[NoModel][csrf]","453181981f50b6700dfe7d02c30f31a4");
+		
+		
+		bookingInfo.setContentType("UTF-8");
+		bookingInfo.setInputs(map);		
+		bookingResult.setData(bookingInfo);
+		bookingResult.setRet(true);
+		return bookingResult;
+	}
+
+	@Override
+	public String getHtml(FlightSearchParam arg0) {
+		QFPostMethod postMethod = null;
+		QFGetMethod getMethod = null;	
+		try {
+			QFHttpClient httpClient = new QFHttpClient(arg0, false);
+			httpClient.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
+			
+			postMethod = new QFPostMethod("https://www.bintercanarias.com/booking/searchDo");
+			
+			NameValuePair[] values = {
+					new NameValuePair("data[search][departureDate]", arg0.getDepDate().replaceAll("-", "/")),
+					new NameValuePair("data[search][returnDate]",  arg0.getRetDate().replaceAll("-", "/")),
+					DATA_SEARCH_DATE_ADVANCE,
+					SEARCH_INIT_DATES_0_MONTH,
+					SEARCH_INIT_DATES_0_YEAR,
+					SEARCH_INIT_DATES_1_MONTH,
+					SEARCH_INIT_DATES_1_YEAR,
+					DATA_SEARCH_TIPO_BUSQUEDA,
+					new NameValuePair("data[search][from]", arg0.getDep()),
+					new NameValuePair("data[search][to]", arg0.getArr()),
+					DATA_SEARCH_ONE_WAY,
+					DATA_SEARCH_ONLY_POINTS,
+					DATA_SEARCH_ONLY_DIRECT_FLIGHTS,
+					DATA_SEARCH_RETURN_DATE_VISUAL,
+					DATA_SEARCH_CALENDAR,
+					DATA_SEARCH_PASSENGERS_ADTDC,
+					DATA_SEARCH_PASSENGERS_ADT,
+					DATA_SEARCH_PASSENGERS_CHDDC,
+					DATA_SEARCH_PASSENGERS_CHD,
+					DATA_SEARCH_PASSENGERS_INFDC,
+					DATA_SEARCH_PASSENGERS_INF,
+					DATA_SEARCH_CONDITIONS,
+					DATA_SEARCH_FLAG_LESS_29_FARE,
+					DATA_SEARCH_FLAG_HIGHER_60_FARE,
+					DATA_SEARCH_FLAG_LARGE_FAMILY,
+					DATA_SEARCH_FLAG_UNIVERSITY_FARE,
+			};
+			httpClient.getState().clearCookies();
+			postMethod.setRequestBody(values);
+			httpClient.executeMethod(postMethod);
+			if(postMethod.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY || postMethod.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY){
+				Header location = postMethod.getResponseHeader("Location");
+				String url = "";
+				if(location !=null){
+					url = location.getValue();
+					if(!url.startsWith("http")){
+						url = postMethod.getURI().getScheme() + "://" + postMethod.getURI().getHost() + (postMethod.getURI().getPort()==-1?"":(":" + postMethod.getURI().getPort())) + url;
+					}
+				}else{
+					return "Exception";
+				}
+				String cookie = StringUtils.join(httpClient.getState().getCookies(),"; ");
+				getMethod = new QFGetMethod(url);
+				httpClient.getState().clearCookies();
+				getMethod.addRequestHeader("Cookie",cookie);
+				httpClient.executeMethod(getMethod);
+				String html = getMethod.getResponseBodyAsString();
+				String redirectUrl =  getMethod.getURI().getScheme() + "://" + getMethod.getURI().getHost() + (getMethod.getURI().getPort()==-1?"":(":" + getMethod.getURI().getPort())) + StringUtils.substringBetween(html, "window.location.replace(\"", "\")");
+				
+				getMethod = new QFGetMethod(redirectUrl);
+				httpClient.getState().clearCookies();
+				getMethod.addRequestHeader("Cookie",cookie);
+				httpClient.executeMethod(getMethod);
+				return getMethod.getResponseBodyAsString();
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (postMethod != null) {
+				postMethod.releaseConnection();
+			}
+		}
+		return "Exception";
+	}
+
+	@Override
+	public ProcessResultInfo process(String arg0, FlightSearchParam arg1) {
+		String html = arg0;
+		ProcessResultInfo result = new ProcessResultInfo();
+		if ("Exception".equals(html)) {	
+			result.setRet(false);
+			result.setStatus(Constants.CONNECTION_FAIL);
+			return result;			
+		}		
+		
+		if (html.contains("There are no places available on this date. ")) {
+			result.setRet(false);
+			result.setStatus(Constants.INVALID_DATE);
+			return result;
+		}
+		
+		String outboundFlightString = StringUtils.substringBetween(html, 
+				"<div id=\"availabilityType0\" class=\"availabilityType rounded-corners-8\">",
+				"<div id=\"availabilityType1\" class=\"availabilityType rounded-corners-8\">");
+		
+		String retFlightString = StringUtils.substringAfter(html, "<div id=\"availabilityType1\" class=\"availabilityType rounded-corners-8\">");
+		
+		List<OneWayFlightInfo> outboundFlightList = null;
+		List<OneWayFlightInfo> retFlightList = null;	
+		
+		try {
+			outboundFlightList = getOneDirectionInfo(outboundFlightString, arg1, FlightDirection.OUT_BOUND);
+			retFlightList = getOneDirectionInfo(retFlightString, arg1, FlightDirection.RETURN);
+		} catch(ProcessException ex) {
+			result = ex.getProcessResultInfo();
+			return result;
+		}
+		result.setRet(true);
+		result.setStatus(Constants.SUCCESS);
+		//result.setData(flightList);
+		return result;
+	}
+	
+	// 获取单方向的航班信息
+	private List<OneWayFlightInfo> getOneDirectionInfo(String html, FlightSearchParam arg1, FlightDirection direction) throws ProcessException {
+		List<OneWayFlightInfo> flightList = new ArrayList<OneWayFlightInfo>();
+		
+		int p = html.indexOf("availability-subrow-info");
+		if (p == -1) {
+			ProcessResultInfo result = new ProcessResultInfo();
+			result.setRet(false);
+			result.setStatus(Constants.NO_RESULT);
+			
+			ProcessException ex = new ProcessException(result);
+			throw ex;
+		}
+		do {
+			OneWayFlightInfo baseFlight = new OneWayFlightInfo();
+			List<FlightSegement> segs = new ArrayList<FlightSegement>();
+			FlightDetail flightDetail = new FlightDetail();
+			
+			List<String> flightNoList = new ArrayList<String>();
+			
+			String htmlSource = StringUtils.substringBetween(html.substring(p), "<div class=\"availability-cell-right  offer \">", ">");
+			String flightInfoString = StringUtils.substringBetween(htmlSource, "value=\"", "\"");
+			String[] flightInfoList = StringUtils.substringBetween(flightInfoString, "|", "|").split(";");
+			for (int i = 0; i < flightInfoList.length; i++) {
+				String[] flightInfo = flightInfoList[i].split(",");
+				
+				flightNoList.add(flightInfo[0]);
+				
+				FlightSegement seg = new FlightSegement();
+				seg.setFlightno(flightInfo[0]);
+				seg.setDepDate(direction == FlightDirection.OUT_BOUND ? arg1.getDepDate() : arg1.getRetDate());
+				seg.setDepairport(flightInfo[1]);
+				seg.setDeptime(flightInfo[3]);
+				
+				seg.setArrairport(flightInfo[2]);
+				seg.setArrtime(flightInfo[4]);
+				seg.setArrDate(flightInfo[6]);
+				segs.add(seg);
+			}
+			String priceString = StringUtils.substringBetween(htmlSource, "data-fareimport=\"", "\"");
+			String taxString = StringUtils.substringBetween(htmlSource, "data-taxes=\"", "\"");
+			flightDetail.setFlightno(flightNoList);
+			flightDetail.setMonetaryunit("EUR");
+			flightDetail.setPrice(Double.valueOf(priceString));
+			flightDetail.setTax(Double.valueOf(taxString) + 12); //手续费默认12元
+			flightDetail.setDepcity(direction == FlightDirection.OUT_BOUND ? arg1.getDep() : arg1.getArr());
+			flightDetail.setArrcity(direction == FlightDirection.OUT_BOUND ? arg1.getArr() : arg1.getDep());
+			flightDetail.setWrapperid(arg1.getWrapperid());
+			
+			baseFlight.setDetail(flightDetail);
+			baseFlight.setInfo(segs);
+			flightList.add(baseFlight);
+			
+			p = html.indexOf("availability-subrow-info", p + 1);
+		} while(p != -1);
+		
+		return flightList;
+	}
+}
