@@ -1,6 +1,9 @@
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.qunar.qfwrapper.bean.booking.BookingInfo;
 import com.qunar.qfwrapper.bean.booking.BookingResult;
 import com.qunar.qfwrapper.bean.search.FlightDetail;
 import com.qunar.qfwrapper.bean.search.FlightSearchParam;
@@ -28,14 +31,9 @@ public class Wrapper_gjdairnt001 implements QunarCrawler {
 	private static final NameValuePair SEARCH_INIT_DATES_1_MONTH = new NameValuePair("search[initDates][1][month]", "");
 	private static final NameValuePair SEARCH_INIT_DATES_1_YEAR = new NameValuePair("search[initDates][1][year]", "");
 	private static final NameValuePair DATA_SEARCH_TIPO_BUSQUEDA = new NameValuePair("data[search][tipoBusqueda]", "normal");	
-	
-	//private static final NameValuePair DATA_SEARCH_FROM_TEXT = new NameValuePair("data[search][from_text]", "Dakar");
-	
-	//private static final NameValuePair DATA_SEARCH_TO_TEXT = new NameValuePair("data[search][to_text]", "La Gomera");
 	private static final NameValuePair DATA_SEARCH_ONE_WAY = new NameValuePair("data[search][oneWay]", "1");
 	private static final NameValuePair DATA_SEARCH_ONLY_POINTS = new NameValuePair("data[search][onlyPoints]", "0");
 	private static final NameValuePair DATA_SEARCH_ONLY_DIRECT_FLIGHTS = new NameValuePair("data[search][onlyDirectFlights]", "0");
-	//private static final NameValuePair DATA_SEARCH_DEPARTURE_DATE_VISUAL = new NameValuePair("data[search][departureDateVisual]", "17 Jul 2014");
 	private static final NameValuePair DATA_SEARCH_RETURN_DATE_VISUAL = new NameValuePair("data[search][returnDateVisual]", "");
 	private static final NameValuePair DATA_SEARCH_CALENDAR = new NameValuePair("data[search][calendar]", "0");
 	private static final NameValuePair DATA_SEARCH_PASSENGERS_ADTDC = new NameValuePair("data[search][passengers][ADTDC]", "1");
@@ -53,8 +51,47 @@ public class Wrapper_gjdairnt001 implements QunarCrawler {
 	
 	@Override
 	public BookingResult getBookingInfo(FlightSearchParam arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		String bookingUrlPre = "https://www.bintercanarias.com/booking/searchDo";
+		BookingResult bookingResult = new BookingResult();
+		
+		BookingInfo bookingInfo = new BookingInfo();
+		bookingInfo.setAction(bookingUrlPre);
+		bookingInfo.setMethod("post");
+		Map<String, String> map = new LinkedHashMap<String, String>();
+		
+		map.put("data[search][returnDate]", "");
+		map.put("data[search][returnDate]",  arg0.getRetDate().replaceAll("-", "/"));
+		map.put("data[search][dateAdvance]", "2");
+		map.put("search[initDates][0][month]", "06");
+		map.put("search[initDates][0][year]", "2014");
+		map.put("search[initDates][1][month]", "06");
+		map.put("search[initDates][1][year]", "2014");
+		map.put("data[search][tipoBusqueda]", "normal");
+		map.put("data[search][from]", arg0.getDep());
+		map.put("data[search][to]", arg0.getArr());
+		map.put("data[search][oneWay]", "1");
+		map.put("data[search][onlyPoints]", "0");
+		map.put("data[search][onlyDirectFlights]", "0");
+		map.put("data[search][returnDateVisual]", "");
+		map.put("data[search][calendar]", "0");
+		map.put("data[search][passengers][ADTDC]", "1");
+		map.put("data[search][passengers][ADT]", "0");
+		map.put("data[search][passengers][CHDDC]", "0");
+		map.put("data[search][passengers][CHD]", "0");
+		map.put("data[search][passengers][INFDC]", "0");
+		map.put("data[search][passengers][INF]", "0");
+		map.put("data[search][conditions]", "0");
+		map.put("data[search][flagLess29Fare]", "0");
+		map.put("data[search][flagHigher60Fare]", "0");
+		map.put("data[search][flagLargeFamily]", "0");
+		map.put("data[search][flagUniversityFare]", "0");
+		
+		
+		bookingInfo.setContentType("UTF-8");
+		bookingInfo.setInputs(map);		
+		bookingResult.setData(bookingInfo);
+		bookingResult.setRet(true);
+		return bookingResult;
 	}
 
 	@Override
@@ -184,7 +221,7 @@ public class Wrapper_gjdairnt001 implements QunarCrawler {
 				
 				seg.setArrairport(flightInfo[2]);
 				seg.setArrtime(flightInfo[4]);
-				seg.setArrDate(flightInfo[6]);
+				seg.setArrDate(this.convertDateString(flightInfo[6]));
 				segs.add(seg);
 			}
 			String priceString = StringUtils.substringBetween(htmlSource, "data-fareimport=\"", "\"");
@@ -207,5 +244,10 @@ public class Wrapper_gjdairnt001 implements QunarCrawler {
 		result.setStatus(Constants.SUCCESS);
 		result.setData(flightList);
 		return result;
+	}
+	
+	// 将YYYYmmdd格式的日期转换为YYYY-mm-dd
+	private String convertDateString(String date) {
+		return date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6, 8);
 	}
 }

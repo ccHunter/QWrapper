@@ -63,7 +63,7 @@ public class Wrapper_gjsairnt001 implements QunarCrawler {
 	
 	@Override
 	public BookingResult getBookingInfo(FlightSearchParam arg0) {
-		String bookingUrlPre = "https://www.bintercanarias.com/booking/availabilityFlightsDo";
+		String bookingUrlPre = "https://www.bintercanarias.com/booking/searchDo";
 		BookingResult bookingResult = new BookingResult();
 		
 		BookingInfo bookingInfo = new BookingInfo();
@@ -71,10 +71,32 @@ public class Wrapper_gjsairnt001 implements QunarCrawler {
 		bookingInfo.setMethod("post");
 		Map<String, String> map = new LinkedHashMap<String, String>();
 		
-		map.put("data[NoModel][selectedPoints]","0");
-		map.put("data[flights][0]","EJ,E,9|NT6651,DKR,TFN,12:50,16:20,0,20140709,;NT651,TFN,GMZ,09:30,10:00,1210,20140710,|99,99,99,0,0,0|0ec29abfcf961edfdfc954f868e9520e");
-		map.put("data[flights][1]","EJ,E,9|NT652,GMZ,TFN,17:50,18:20,0,20140819,;NT6650,TFN,DKR,10:45,12:10,1160,20140820,|99,99,99,0,0,0|44482a930bcbe15ed7c735b131512ab3");
-		map.put("data[NoModel][csrf]","453181981f50b6700dfe7d02c30f31a4");
+		map.put("data[search][departureDate]", arg0.getDepDate().replaceAll("-", "/"));
+		map.put("data[search][returnDate]",  arg0.getRetDate().replaceAll("-", "/"));
+		map.put("data[search][dateAdvance]", "2");
+		map.put("search[initDates][0][month]", "06");
+		map.put("search[initDates][0][year]", "2014");
+		map.put("search[initDates][1][month]", "06");
+		map.put("search[initDates][1][year]", "2014");
+		map.put("data[search][tipoBusqueda]", "normal");
+		map.put("data[search][from]", arg0.getDep());
+		map.put("data[search][to]", arg0.getArr());
+		map.put("data[search][oneWay]", "0");
+		map.put("data[search][onlyPoints]", "0");
+		map.put("data[search][onlyDirectFlights]", "0");
+		map.put("data[search][returnDateVisual]", "");
+		map.put("data[search][calendar]", "0");
+		map.put("data[search][passengers][ADTDC]", "1");
+		map.put("data[search][passengers][ADT]", "0");
+		map.put("data[search][passengers][CHDDC]", "0");
+		map.put("data[search][passengers][CHD]", "0");
+		map.put("data[search][passengers][INFDC]", "0");
+		map.put("data[search][passengers][INF]", "0");
+		map.put("data[search][conditions]", "0");
+		map.put("data[search][flagLess29Fare]", "0");
+		map.put("data[search][flagHigher60Fare]", "0");
+		map.put("data[search][flagLargeFamily]", "0");
+		map.put("data[search][flagUniversityFare]", "0");
 		
 		
 		bookingInfo.setContentType("UTF-8");
@@ -235,7 +257,7 @@ public class Wrapper_gjsairnt001 implements QunarCrawler {
 				
 				seg.setArrairport(flightInfo[2]);
 				seg.setArrtime(flightInfo[4]);
-				seg.setArrDate(flightInfo[6]);
+				seg.setArrDate(this.convertDateString(flightInfo[6]));
 				segs.add(seg);
 			}
 			String priceString = StringUtils.substringBetween(htmlSource, "data-fareimport=\"", "\"");
@@ -256,5 +278,10 @@ public class Wrapper_gjsairnt001 implements QunarCrawler {
 		} while(p != -1);
 		
 		return flightList;
+	}
+	
+	// 将YYYYmmdd格式的日期转换为YYYY-mm-dd
+	private String convertDateString(String date) {
+		return date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6, 8);
 	}
 }
