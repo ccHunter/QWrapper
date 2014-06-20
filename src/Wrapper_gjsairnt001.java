@@ -16,6 +16,7 @@ import com.qunar.qfwrapper.bean.search.FlightSearchParam;
 import com.qunar.qfwrapper.bean.search.FlightSegement;
 import com.qunar.qfwrapper.bean.search.OneWayFlightInfo;
 import com.qunar.qfwrapper.bean.search.ProcessResultInfo;
+import com.qunar.qfwrapper.bean.search.RoundTripFlightInfo;
 import com.qunar.qfwrapper.constants.Constants;
 import com.qunar.qfwrapper.interfaces.QunarCrawler;
 import com.qunar.qfwrapper.util.QFGetMethod;
@@ -205,19 +206,43 @@ public class Wrapper_gjsairnt001 implements QunarCrawler {
 		
 		String retFlightString = StringUtils.substringAfter(html, "<div id=\"availabilityType1\" class=\"availabilityType rounded-corners-8\">");
 		
+		List<RoundTripFlightInfo> flightList = new ArrayList<RoundTripFlightInfo>();
 		List<OneWayFlightInfo> outboundFlightList = null;
 		List<OneWayFlightInfo> retFlightList = null;	
 		
 		try {
 			outboundFlightList = getOneDirectionInfo(outboundFlightString, arg1, FlightDirection.OUT_BOUND);
 			retFlightList = getOneDirectionInfo(retFlightString, arg1, FlightDirection.RETURN);
+			for (int i = 0; i < outboundFlightList.size(); i++) {
+				for (int j = 0; j < retFlightList.size(); j++) {
+					OneWayFlightInfo outboundFlightInfo = outboundFlightList.get(i);
+					OneWayFlightInfo returnedlightInfo = retFlightList.get(j);
+					double outboundPrice = outboundFlightInfo.getDetail().getPrice();
+					double returnedPrice = returnedlightInfo.getDetail().getPrice();
+					
+					RoundTripFlightInfo flightInfo = new RoundTripFlightInfo();
+					
+					flightInfo.setInfo(outboundFlightInfo.getInfo());
+					FlightDetail outboundDetail = outboundFlightInfo.getDetail();
+					outboundDetail.setPrice(outboundPrice + returnedPrice); 
+					flightInfo.setDetail(outboundDetail);
+					
+					flightInfo.setRetdepdate(returnedlightInfo.getDetail().getDepdate());
+					flightInfo.setRetflightno(returnedlightInfo.getDetail().getFlightno());
+					flightInfo.setRetinfo(returnedlightInfo.getInfo());
+					flightInfo.setOutboundPrice(outboundPrice);
+					flightInfo.setReturnedPrice(returnedPrice);
+					
+					flightList.add(flightInfo);
+				}
+			}
 		} catch(ProcessException ex) {
 			result = ex.getProcessResultInfo();
 			return result;
 		}
 		result.setRet(true);
 		result.setStatus(Constants.SUCCESS);
-		//result.setData(flightList);
+		result.setData(flightList);
 		return result;
 	}
 	
@@ -265,7 +290,7 @@ public class Wrapper_gjsairnt001 implements QunarCrawler {
 			flightDetail.setFlightno(flightNoList);
 			flightDetail.setMonetaryunit("EUR");
 			flightDetail.setPrice(Double.valueOf(priceString));
-			flightDetail.setTax(Double.valueOf(taxString) + 12); //手续费默认12元
+			flightDetail.setTax(Double.valueOf(taxString) + (direction == FlightDirection.OUT_BOUND ? 12 : 0)); //手续费默认12元
 			flightDetail.setDepcity(direction == FlightDirection.OUT_BOUND ? arg1.getDep() : arg1.getArr());
 			flightDetail.setArrcity(direction == FlightDirection.OUT_BOUND ? arg1.getArr() : arg1.getDep());
 			flightDetail.setWrapperid(arg1.getWrapperid());
