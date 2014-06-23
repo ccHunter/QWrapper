@@ -60,7 +60,7 @@ public class Wrapper_gjdairnt001 implements QunarCrawler {
 		Map<String, String> map = new LinkedHashMap<String, String>();
 		
 		map.put("data[search][departureDate]", arg0.getDepDate().replaceAll("-", "/"));
-		map.put("data[search][returnDate]",  arg0.getRetDate().replaceAll("-", "/"));
+		map.put("data[search][returnDate]",  "");
 		map.put("data[search][dateAdvance]", "2");
 		map.put("search[initDates][0][month]", "06");
 		map.put("search[initDates][0][year]", "2014");
@@ -68,8 +68,6 @@ public class Wrapper_gjdairnt001 implements QunarCrawler {
 		map.put("search[initDates][1][year]", "2014");
 		map.put("data[search][tipoBusqueda]", "normal");
 		map.put("data[search][from]", arg0.getDep());
-		map.put("data[search][from_text]", "Dakar");
-		map.put("data[search][to_text]", "La Gomera");
 		map.put("data[search][to]", arg0.getArr());
 		map.put("data[search][oneWay]", "1");
 		map.put("data[search][onlyPoints]", "0");
