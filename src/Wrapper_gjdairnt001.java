@@ -59,7 +59,7 @@ public class Wrapper_gjdairnt001 implements QunarCrawler {
 		bookingInfo.setMethod("post");
 		Map<String, String> map = new LinkedHashMap<String, String>();
 		
-		map.put("data[search][returnDate]", "");
+		map.put("data[search][departureDate]", arg0.getDepDate().replaceAll("-", "/"));
 		map.put("data[search][returnDate]",  arg0.getRetDate().replaceAll("-", "/"));
 		map.put("data[search][dateAdvance]", "2");
 		map.put("search[initDates][0][month]", "06");
