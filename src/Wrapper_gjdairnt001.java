@@ -139,6 +139,7 @@ public class Wrapper_gjdairnt001 implements QunarCrawler {
 			postMethod.setRequestBody(values);
 			httpClient.executeMethod(postMethod);
 			return postMethod.getResponseBodyAsString();
+			/*
 			if(postMethod.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY || postMethod.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY){
 				Header location = postMethod.getResponseHeader("Location");
 				String url = "";
@@ -163,7 +164,7 @@ public class Wrapper_gjdairnt001 implements QunarCrawler {
 				getMethod.addRequestHeader("Cookie",cookie);
 				httpClient.executeMethod(getMethod);
 				return getMethod.getResponseBodyAsString();
-			}
+			}*/
 			
 		} catch (Exception e) {
 			e.printStackTrace();
